@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz App | Thatha Mahalakshmi</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif; }
+body { background:#4c1d95; color:white; min-height:100vh; padding:20px; }
+.container { max-width:600px; margin:40px auto; background:white; color:#1e293b; padding:30px; border-radius:20px; text-align:center; }
+h1 { color:#4c1d95; }
+.sub { color:#64748b; margin-bottom:20px; }
+.top { display:flex; justify-content:space-between; margin-bottom:20px; font-weight:bold; }
+.top span { background:#ede9fe; padding:8px 14px; border-radius:20px; }
+#question { font-size:22px; font-weight:bold; margin:20px 0; text-align:left; }
+.opt { display:block; width:100%; text-align:left; padding:14px; margin-bottom:10px; border:2px solid #e2e8f0; border-radius:10px; background:#f8fafc; cursor:pointer; font-size:16px; }
+.opt:hover { border-color:#7c3aed; background:#ede9fe; }
+.opt.correct { background:#dcfce7; border-color:#22c55e; }
+.opt.wrong { background:#fee2e2; border-color:#ef4444; }
+#nextBtn { background:#7c3aed; color:white; border:none; padding:13px 30px; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; display:none; margin:15px auto 0; }
+#startBtn { background:#facc15; border:none; padding:15px 35px; border-radius:10px; font-size:18px; font-weight:bold; cursor:pointer; margin-top:20px; }
+#result { display:none; }
+#result h2 { font-size:32px; color:#4c1d95; margin-bottom:10px; }
+#result p { font-size:18px; margin-bottom:10px; }
+.badge { font-size:50px; margin:10px; }
+.back { display:block; margin-top:20px; color:white; text-align:center; }
+</style>
+</head>
+<body>
+<div class="container" id="startScreen">
+<h1>🧠 Quiz App</h1>
+<p class="sub">Thatha Mahalakshmi | Codveda Level 2 - Task 3</p>
+<p style="font-size:18px;">Test your HTML, CSS & JavaScript knowledge!</p>
+<p style="margin-top:10px; color:#64748b;">5 Questions • 15 sec each • Instant Result</p>
+<button id="startBtn" onclick="startQuiz()">Start Quiz 🚀</button>
+</div>
+
+<div class="container" id="quizScreen" style="display:none;">
+<div class="top"><span id="qCount">Q 1/5</span><span>⏰ <span id="timer">15</span>s</span><span>Score: <span id="score">0</span></span></div>
+<div id="question"></div>
+<div id="options"></div>
+<button id="nextBtn" onclick="nextQuestion()">Next ➡️</button>
+</div>
+
+<div class="container" id="result" >
+<div class="badge">🏆</div>
+<h2>Quiz Completed!</h2>
+<p id="finalScore"></p>
+<p id="message"></p>
+<button id="startBtn" onclick="location.reload()">Play Again 🔄</button>
+</div>
+<a href="#" class="back">← Back to Portfolio</a>
+
+<script>
+let questions=[
+{q:"Which tag is used for heading in HTML?",o:["<p>","<h1>","<div>","<span>"],a:1},
+{q:"Which symbol is used for ID in CSS?",o:[".","#","$","*"],a:1},
+{q:"How to write JavaScript alert?",o:["msg('Hi')","alert('Hi')","print('Hi')","show('Hi')"],a:1},
+{q:"Which is used to change background color in CSS?",o:["color","bg-color","background-color","bg"],a:2},
+{q:"What does HTML stand for?",o:["Hyper Text Markup Language","High Text Machine Language","Hyper Tool Markup Language","None"],a:0}
+];
+let current=0, score=0, timeLeft=15, timerInt;
+function startQuiz(){ document.getElementById("startScreen").style.display="none"; document.getElementById("quizScreen").style.display="block"; showQ(); }
+function showQ(){
+  clearInterval(timerInt); timeLeft=15; document.getElementById("timer").innerText=timeLeft;
+  document.getElementById("qCount").innerText=`Q ${current+1}/5`;
+  document.getElementById("score").innerText=score;
+  document.getElementById("question").innerText=questions[current].q;
+  let optDiv=document.getElementById("options"); optDiv.innerHTML="";
+  document.getElementById("nextBtn").style.display="none";
+  questions[current].o.forEach((opt,i)=>{
+    let b=document.createElement("button"); b.className="opt"; b.innerText=opt; b.onclick=()=>checkAnswer(b,i); optDiv.appendChild(b);
+  });
+  timerInt=setInterval(()=>{ timeLeft--; document.getElementById("timer").innerText=timeLeft; if(timeLeft<=0){ clearInterval(timerInt); nextQuestion(); } },1000);
+}
+function checkAnswer(btn,i){
+  clearInterval(timerInt);
+  let correct=questions[current].a;
+  document.querySelectorAll(".opt").forEach(b=>b.disabled=true);
+  if(i==correct){ btn.classList.add("correct"); score++; document.getElementById("score").innerText=score; }
+  else{ btn.classList.add("wrong"); document.querySelectorAll(".opt")[correct].classList.add("correct"); }
+  document.getElementById("nextBtn").style.display="block";
+}
+function nextQuestion(){
+  current++;
+  if(current<questions.length) showQ();
+  else{
+    document.getElementById("quizScreen").style.display="none";
+    let r=document.getElementById("result"); r.style.display="block";
+    document.getElementById("finalScore").innerText=`Your Score: ${score} / 5`;
+    document.getElementById("message").innerText = score==5 ? "Perfect! You are a JavaScript Star! ⭐" : score>=3 ? "Great Job! Keep Learning! 👏" : "Good Try! Practice Again! 💪";
+  }
+}
+</script>
+</body>
+</html>

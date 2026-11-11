@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather App | Thatha Mahalakshmi</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif; }
+body { background: linear-gradient(135deg, #0ea5e9, #2563eb); min-height:100vh; padding:20px; color:white; }
+.container { max-width:550px; margin:40px auto; background:rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding:30px; border-radius:20px; text-align:center; }
+h1 { color:white; margin-bottom:5px; }
+p.sub { color:#e0f2fe; margin-bottom:25px; }
+.search { display:flex; gap:10px; margin-bottom:20px; }
+.search input { flex:1; padding:13px; border-radius:10px; border:none; font-size:16px; }
+.search button { background:#facc15; border:none; padding:13px 20px; border-radius:10px; font-weight:bold; cursor:pointer; }
+.quick { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:20px; }
+.quick button { background:white; border:none; padding:8px 14px; border-radius:20px; cursor:pointer; font-weight:bold; }
+.card { background:white; color:#0f172a; padding:25px; border-radius:15px; display:none; }
+.card h2 { font-size:28px; margin-bottom:5px; }
+.temp { font-size:55px; font-weight:bold; color:#2563eb; margin:10px 0; }
+.desc { font-size:18px; margin-bottom:15px; }
+.details { display:flex; justify-content:space-around; background:#f1f5f9; padding:15px; border-radius:10px; }
+.details div b { display:block; font-size:18px; }
+#loading { display:none; margin:15px; }
+#error { color:#fecaca; margin:10px; font-weight:bold; }
+.back { display:block; text-align:center; margin-top:20px; color:white; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🌦️ Weather App</h1>
+<p class="sub">Thatha Mahalakshmi | Codveda Level 2 - Task 2 | Live API</p>
+
+<div class="search">
+<input type="text" id="cityInput" placeholder="Enter city... e.g. Tadepalli, Vijayawada" value="Tadepalli">
+<button onclick="getWeather()">Search 🔍</button>
+</div>
+
+<div class="quick">
+<button onclick="quickSearch('Tadepalli')">Tadepalli</button>
+<button onclick="quickSearch('Vijayawada')">Vijayawada</button>
+<button onclick="quickSearch('Hyderabad')">Hyderabad</button>
+<button onclick="quickSearch('London')">London</button>
+<button onclick="quickSearch('New York')">New York</button>
+</div>
+
+<p id="loading">Loading weather... ⏳</p>
+<p id="error"></p>
+
+<div class="card" id="weatherCard">
+<h2 id="cityName">--</h2>
+<p id="dateTime">--</p>
+<div class="temp" id="temp">--°C</div>
+<div class="desc" id="desc">--</div>
+<div class="details">
+<div>💧 Humidity<br><b id="humidity">--</b></div>
+<div>💨 Wind<br><b id="wind">--</b></div>
+<div>🌡️ Feels Like<br><b id="feels">--</b></div>
+</div>
+</div>
+<a href="#" class="back">← Back to Portfolio</a>
+</div>
+
+<script>
+function getCodeText(code){
+  if(code==0) return "☀️ Clear Sky";
+  if(code==1||code==2) return "🌤️ Partly Cloudy";
+  if(code==3) return "☁️ Overcast";
+  if(code==45||code==48) return "🌫️ Foggy";
+  if(code>=51&&code<=57) return "🌦️ Drizzle";
+  if(code>=61&&code<=67) return "🌧️ Rainy";
+  if(code>=71&&code<=77) return "❄️ Snow";
+  if(code>=80&&code<=82) return "🌧️ Rain Showers";
+  if(code>=95) return "⛈️ Thunderstorm";
+  return "🌤️ Cloudy";
+}
+async function getWeather(){
+  let city = document.getElementById("cityInput").value.trim();
+  if(!city){ alert("Please enter city name!"); return; }
+  document.getElementById("loading").style.display="block";
+  document.getElementById("error").innerText="";
+  document.getElementById("weatherCard").style.display="none";
+  try{
+    let geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+    let geoData = await geo.json();
+    if(!geoData.results){ throw new Error("City not found"); }
+    let place = geoData.results[0];
+    let w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`);
+    let data = await w.json();
+    let cur = data.current;
+    document.getElementById("cityName").innerText = `${place.name}, ${place.country}`;
+    document.getElementById("dateTime").innerText = new Date(cur.time).toLocaleString();
+    document.getElementById("temp").innerText = Math.round(cur.temperature_2m)+"°C";
+    document.getElementById("desc").innerText = getCodeText(cur.weather_code);
+    document.getElementById("humidity").innerText = cur.relative_humidity_2m+"%";
+    document.getElementById("wind").innerText = cur.wind_speed_10m+" km/h";
+    document.getElementById("feels").innerText = Math.round(cur.apparent_temperature)+"°C";
+    document.getElementById("weatherCard").style.display="block";
+  }catch(e){ document.getElementById("error").innerText = "❌ City not found! Try Vijayawada, Hyderabad"; }
+  document.getElementById("loading").style.display="none";
+}
+function quickSearch(city){ document.getElementById("cityInput").value=city; getWeather(); }
+document.getElementById("cityInput").addEventListener("keypress", e=>{ if(e.key==="Enter") getWeather(); });
+getWeather();
+</script>
+</body>
+</html>
